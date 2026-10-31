@@ -39,7 +39,7 @@ Current intended stack:
 - Worker: Bun + BullMQ.
 - Queue backend: Redis.
 - Database: PostgreSQL.
-- ORM/migrations: Drizzle ORM + drizzle-kit + `pg` driver.
+- ORM/migrations: Drizzle ORM + drizzle-kit + native `Bun.SQL` driver (`drizzle-orm/bun-sql`).
 - Web dashboard: Next.js + React + TypeScript.
 - AI service: Python + FastAPI.
 - SDK: TypeScript package using native `fetch` where practical.

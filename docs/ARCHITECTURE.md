@@ -1,10 +1,10 @@
 # Orchestrail Architecture
 
-**Status:** Proposed architecture baseline. Validate and update as implementation decisions are tested.
+**Status:** Implementation architecture baseline. Verified components include Monorepo infrastructure, Docker PostgreSQL/Redis, Database package with Bun.SQL, Tenant provisioning, API key authentication, and Transactional Event Ingestion with Outbox.
 
 ## 1. Architecture goals
 
-Orchestrail is a multi-tenant infrastructure platform for events, webhooks, and durable workflows. Its architecture should prioritize:
+Orchestrail is a multi-tenant infrastructure platform for events, webhooks, and durable workflows. Its architecture prioritizes:
 
 - Reliable ingestion independent of destination availability.
 - At-least-once asynchronous webhook delivery.
@@ -15,7 +15,40 @@ Orchestrail is a multi-tenant infrastructure platform for events, webhooks, and 
 - Independent failure of the AI layer without breaking core platform capabilities.
 - A modular monolith with separate runtime processes before considering microservices.
 
-## 2. Architectural boundaries and vertical slices
+## 2. Tenant Provisioning & Authentication Architecture
+
+### 1. Tenant Provisioning
+
+Tenant registration is not a public HTTP endpoint. It is executed via administrative scripts or CLI (`apps/api/bin/provision-tenant.ts`) using an atomic transaction that creates the tenant and an initial privileged API key. The plaintext key is revealed once.
+
+### 2. API Key Authentication Sequence
+
+```mermaid
+sequenceDiagram
+    participant C as Caller (Client / SDK)
+    participant M as Auth Middleware
+    participant DB as PostgreSQL (Bun.SQL)
+    participant H as Protected Route Handler
+
+    C->>M: HTTP Request + Authorization: Bearer orch_live_<prefix>_<secret>
+    M->>M: Parse & validate format -> extract key_prefix
+    M->>DB: SELECT api_keys JOIN tenants WHERE key_prefix = $1
+    alt Key not found
+        M-->>C: 401 Unauthorized
+    else Key found
+        M->>M: Timing-safe SHA-256 hash comparison
+        alt Hash mismatch / revoked_at / expired_at
+            M-->>C: 401 Unauthorized
+        else Tenant is suspended
+            M-->>C: 403 Forbidden
+        else Valid active key
+            M->>M: Set c.set("tenantId", ...), c.set("scopes", ...)
+            M->>H: Next() -> Route Handler
+        end
+    end
+```
+
+## 2.1 Architectural boundaries and vertical slices
 
 We follow a feature-first modular architecture (vertical slice architecture) across all services:
 
@@ -34,20 +67,16 @@ Rules:
 - Cross-cutting technical capabilities live in `common/`.
 - Application-specific configurations live in `config/` and are validated on process startup.
 
-## 2.1 High-level components
+## 2.2 Event Ingestion Slice (`apps/api/src/features/events`)
 
-| Component         | Responsibility                                                          | Primary dependencies                   |
-| ----------------- | ----------------------------------------------------------------------- | -------------------------------------- |
-| `apps/api`        | Authentication, validation, event ingestion, endpoint and delivery APIs | Bun, Hono, Zod, shared packages        |
-| `apps/worker`     | Outbox publishing and asynchronous webhook delivery                     | Bun, BullMQ, Redis, PostgreSQL         |
-| `apps/web`        | Hosted customer dashboard                                               | Next.js, React, API                    |
-| `apps/ai`         | Tenant-filtered retrieval, agentic retrieval, evaluations               | Python, FastAPI, model/embedding APIs  |
-| `packages/db`     | Database client, schemas, migrations, repositories                      | Drizzle, `pg`, PostgreSQL              |
-| `packages/shared` | Shared types, schemas, constants, error contracts                       | TypeScript, Zod                        |
-| `packages/sdk`    | Customer integration client and webhook verification                    | TypeScript, `fetch`, cryptography APIs |
-| `packages/queue`  | Queue names, job contracts, BullMQ configuration                        | BullMQ, Redis client adapter           |
+The event ingestion slice is structured cleanly by responsibility:
 
-The initial deployment can run API, worker, web, and AI as separate processes/containers while retaining a modular monorepo and shared database. Do not split into independently owned microservices without a measured reason.
+- `events.routes.ts`: registers `POST /v1/events` and applies `requireScope("events:write")`.
+- `events.handler.ts`: validates headers, payload size limit (256 KiB), and parses schema.
+- `events.service.ts`: coordinates canonical request hashing, the PostgreSQL transaction, and endpoint matching.
+- `events.repository.ts`: executes tenant-scoped database operations.
+- `events.schema.ts`: Zod schema for event payload, event type regex, and idempotency key.
+- `event-hash.ts`: canonical JSON stringifier and SHA-256 hash generator.
 
 ## 3. Event ingestion and outbox flow
 
@@ -57,7 +86,7 @@ The event endpoint must not call customer webhook URLs synchronously.
 sequenceDiagram
     participant C as Customer SDK / App
     participant A as Hono API
-    participant P as PostgreSQL
+    participant P as PostgreSQL (Bun.SQL)
     participant O as Outbox Publisher
     participant R as Redis / BullMQ
     participant W as Bun Worker
@@ -66,11 +95,19 @@ sequenceDiagram
     C->>A: POST /v1/events + API key + idempotency key
     A->>A: Authenticate, authorize, validate, hash request
     A->>P: Begin transaction
-    A->>P: Insert event
-    A->>P: Resolve subscriptions and insert deliveries
-    A->>P: Insert outbox messages
-    A->>P: Commit transaction
-    A-->>C: 202 Accepted (or duplicate result)
+    A->>P: Insert event (ON CONFLICT DO NOTHING)
+    alt Duplicate idempotency key
+        A->>P: Fetch existing event & verify request hash
+        A->>P: Count existing deliveries
+        A->>P: Commit
+        A-->>C: 200 OK (duplicate: true)
+    else New event
+        A->>P: Match active endpoints & active signing secrets
+        A->>P: Insert snapshot deliveries
+        A->>P: Insert outbox_messages
+        A->>P: Commit transaction
+        A-->>C: 202 Accepted (duplicate: false)
+    end
     O->>P: Claim due unpublished outbox messages
     O->>R: Publish deterministic delivery job
     O->>P: Mark outbox message published
@@ -88,7 +125,7 @@ PostgreSQL and Redis do not share a transaction. If the API commits an event and
 The publisher later retries publication. A crash after publishing to Redis but before marking the outbox row published can cause duplicate publication. Therefore:
 
 - Outbox publication is at least once.
-- Queue jobs should use stable identifiers where appropriate.
+- Queue jobs use stable identifiers (`delivery_id`, `tenant_id`, `message_id`).
 - Worker processing must check PostgreSQL state and be idempotent.
 - BullMQ job-ID deduplication is an optimization, not the only correctness guarantee.
 
@@ -169,7 +206,7 @@ All outbound requests require timeouts, response-size limits, safe error classif
 
 ## 8. Database ownership
 
-PostgreSQL stores tenants, API key metadata, events, endpoints, subscriptions, deliveries, attempts, outbox messages, and initial rate-limit counters. See `DATABASE.md` for the proposed schema.
+PostgreSQL stores tenants, API key metadata, events, endpoints, subscriptions, deliveries, attempts, outbox messages, and initial rate-limit counters. See `DATABASE.md` for the schema.
 
 The database is authoritative for business state. Redis loss must not erase event or delivery history. After Redis recovery, unpublished outbox messages can be republished and any explicitly designed reconciliation process can repair queue/database discrepancies.
 

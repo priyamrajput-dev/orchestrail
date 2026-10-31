@@ -1,0 +1,2276 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "ff1edd1a-4b56-4464-8672-a51c52bb4e48",
+  "prevIds": ["5c0f52af-b1f8-4c82-a3a1-ee72395b1eb4"],
+  "footprints": [
+    {
+      "statementType": "create_enum",
+      "statementTarget": ["enum", "public", "endpoint_status"],
+      "writes": [
+        "s|enum|public.endpoint_status",
+        "n|enum|public.endpoint_status",
+        "e|enum|public.endpoint_status",
+        "n|type|public.endpoint_status"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": ["enum", "public", "signing_secret_status"],
+      "writes": [
+        "s|enum|public.signing_secret_status",
+        "n|enum|public.signing_secret_status",
+        "e|enum|public.signing_secret_status",
+        "n|type|public.signing_secret_status"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": ["enum", "public", "delivery_status"],
+      "writes": [
+        "s|enum|public.delivery_status",
+        "n|enum|public.delivery_status",
+        "e|enum|public.delivery_status",
+        "n|type|public.delivery_status"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": ["enum", "public", "outbox_message_status"],
+      "writes": [
+        "s|enum|public.outbox_message_status",
+        "n|enum|public.outbox_message_status",
+        "e|enum|public.outbox_message_status",
+        "n|type|public.outbox_message_status"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "endpoints"],
+      "writes": [
+        "s|tbl|public.endpoints",
+        "n|tbl|public.endpoints",
+        "e|tbl|public.endpoints",
+        "n|rel|public.endpoints",
+        "n|type|public.endpoints",
+        "n|rel|public.endpoints_pkey",
+        "n|rel|public.endpoints_tenant_id_id_unique"
+      ],
+      "reads": ["n|sch|public", "n|enum|public.endpoint_status"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "signing_secrets"],
+      "writes": [
+        "s|tbl|public.signing_secrets",
+        "n|tbl|public.signing_secrets",
+        "e|tbl|public.signing_secrets",
+        "n|rel|public.signing_secrets",
+        "n|type|public.signing_secrets",
+        "n|rel|public.signing_secrets_pkey",
+        "n|rel|public.signing_secrets_tenant_id_id_unique"
+      ],
+      "reads": ["n|sch|public", "n|enum|public.signing_secret_status"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "endpoint_subscriptions"],
+      "writes": [
+        "s|tbl|public.endpoint_subscriptions",
+        "n|tbl|public.endpoint_subscriptions",
+        "e|tbl|public.endpoint_subscriptions",
+        "n|rel|public.endpoint_subscriptions",
+        "n|type|public.endpoint_subscriptions",
+        "n|rel|public.endpoint_subscriptions_pkey",
+        "n|rel|public.endpoint_subscriptions_tenant_endpoint_event_unique"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "events"],
+      "writes": [
+        "s|tbl|public.events",
+        "n|tbl|public.events",
+        "e|tbl|public.events",
+        "n|rel|public.events",
+        "n|type|public.events",
+        "n|rel|public.events_pkey",
+        "n|rel|public.events_tenant_id_idempotency_key_unique",
+        "n|rel|public.events_tenant_id_id_unique"
+      ],
+      "reads": ["n|sch|public"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "deliveries"],
+      "writes": [
+        "s|tbl|public.deliveries",
+        "n|tbl|public.deliveries",
+        "e|tbl|public.deliveries",
+        "n|rel|public.deliveries",
+        "n|type|public.deliveries",
+        "n|rel|public.deliveries_pkey",
+        "n|rel|public.deliveries_tenant_event_endpoint_sequence_unique"
+      ],
+      "reads": ["n|sch|public", "n|enum|public.delivery_status"]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": ["table", "public", "outbox_messages"],
+      "writes": [
+        "s|tbl|public.outbox_messages",
+        "n|tbl|public.outbox_messages",
+        "e|tbl|public.outbox_messages",
+        "n|rel|public.outbox_messages",
+        "n|type|public.outbox_messages",
+        "n|rel|public.outbox_messages_pkey",
+        "n|rel|public.outbox_messages_delivery_message_type_unique"
+      ],
+      "reads": ["n|sch|public", "n|enum|public.outbox_message_status"]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "endpoints",
+        "endpoints_tenant_id_status_idx"
+      ],
+      "writes": [
+        "s|idx|public.endpoints_tenant_id_status_idx",
+        "n|idx|public.endpoints_tenant_id_status_idx",
+        "e|idx|public.endpoints_tenant_id_status_idx",
+        "n|rel|public.endpoints_tenant_id_status_idx"
+      ],
+      "reads": [
+        "n|tbl|public.endpoints",
+        "n|sch|public",
+        "n|col|public.endpoints.tenant_id",
+        "n|col|public.endpoints.status"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "endpoints",
+        "endpoints_tenant_id_created_at_idx"
+      ],
+      "writes": [
+        "s|idx|public.endpoints_tenant_id_created_at_idx",
+        "n|idx|public.endpoints_tenant_id_created_at_idx",
+        "e|idx|public.endpoints_tenant_id_created_at_idx",
+        "n|rel|public.endpoints_tenant_id_created_at_idx"
+      ],
+      "reads": [
+        "n|tbl|public.endpoints",
+        "n|sch|public",
+        "n|col|public.endpoints.tenant_id",
+        "n|col|public.endpoints.created_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "signing_secrets",
+        "signing_secrets_endpoint_status_idx"
+      ],
+      "writes": [
+        "s|idx|public.signing_secrets_endpoint_status_idx",
+        "n|idx|public.signing_secrets_endpoint_status_idx",
+        "e|idx|public.signing_secrets_endpoint_status_idx",
+        "n|rel|public.signing_secrets_endpoint_status_idx"
+      ],
+      "reads": [
+        "n|tbl|public.signing_secrets",
+        "n|sch|public",
+        "n|col|public.signing_secrets.endpoint_id",
+        "n|col|public.signing_secrets.status"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "endpoint_subscriptions",
+        "endpoint_subscriptions_tenant_event_type_idx"
+      ],
+      "writes": [
+        "s|idx|public.endpoint_subscriptions_tenant_event_type_idx",
+        "n|idx|public.endpoint_subscriptions_tenant_event_type_idx",
+        "e|idx|public.endpoint_subscriptions_tenant_event_type_idx",
+        "n|rel|public.endpoint_subscriptions_tenant_event_type_idx"
+      ],
+      "reads": [
+        "n|tbl|public.endpoint_subscriptions",
+        "n|sch|public",
+        "n|col|public.endpoint_subscriptions.tenant_id",
+        "n|col|public.endpoint_subscriptions.event_type"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "events",
+        "events_tenant_id_created_at_idx"
+      ],
+      "writes": [
+        "s|idx|public.events_tenant_id_created_at_idx",
+        "n|idx|public.events_tenant_id_created_at_idx",
+        "e|idx|public.events_tenant_id_created_at_idx",
+        "n|rel|public.events_tenant_id_created_at_idx"
+      ],
+      "reads": [
+        "n|tbl|public.events",
+        "n|sch|public",
+        "n|col|public.events.tenant_id",
+        "n|col|public.events.created_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "events",
+        "events_tenant_id_event_type_created_at_idx"
+      ],
+      "writes": [
+        "s|idx|public.events_tenant_id_event_type_created_at_idx",
+        "n|idx|public.events_tenant_id_event_type_created_at_idx",
+        "e|idx|public.events_tenant_id_event_type_created_at_idx",
+        "n|rel|public.events_tenant_id_event_type_created_at_idx"
+      ],
+      "reads": [
+        "n|tbl|public.events",
+        "n|sch|public",
+        "n|col|public.events.tenant_id",
+        "n|col|public.events.event_type",
+        "n|col|public.events.created_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "deliveries",
+        "deliveries_tenant_id_created_at_idx"
+      ],
+      "writes": [
+        "s|idx|public.deliveries_tenant_id_created_at_idx",
+        "n|idx|public.deliveries_tenant_id_created_at_idx",
+        "e|idx|public.deliveries_tenant_id_created_at_idx",
+        "n|rel|public.deliveries_tenant_id_created_at_idx"
+      ],
+      "reads": [
+        "n|tbl|public.deliveries",
+        "n|sch|public",
+        "n|col|public.deliveries.tenant_id",
+        "n|col|public.deliveries.created_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "deliveries",
+        "deliveries_tenant_id_status_created_at_idx"
+      ],
+      "writes": [
+        "s|idx|public.deliveries_tenant_id_status_created_at_idx",
+        "n|idx|public.deliveries_tenant_id_status_created_at_idx",
+        "e|idx|public.deliveries_tenant_id_status_created_at_idx",
+        "n|rel|public.deliveries_tenant_id_status_created_at_idx"
+      ],
+      "reads": [
+        "n|tbl|public.deliveries",
+        "n|sch|public",
+        "n|col|public.deliveries.tenant_id",
+        "n|col|public.deliveries.status",
+        "n|col|public.deliveries.created_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "outbox_messages",
+        "outbox_messages_status_next_attempt_idx"
+      ],
+      "writes": [
+        "s|idx|public.outbox_messages_status_next_attempt_idx",
+        "n|idx|public.outbox_messages_status_next_attempt_idx",
+        "e|idx|public.outbox_messages_status_next_attempt_idx",
+        "n|rel|public.outbox_messages_status_next_attempt_idx"
+      ],
+      "reads": [
+        "n|tbl|public.outbox_messages",
+        "n|sch|public",
+        "n|col|public.outbox_messages.status",
+        "n|col|public.outbox_messages.next_attempt_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "outbox_messages",
+        "outbox_messages_tenant_id_created_at_idx"
+      ],
+      "writes": [
+        "s|idx|public.outbox_messages_tenant_id_created_at_idx",
+        "n|idx|public.outbox_messages_tenant_id_created_at_idx",
+        "e|idx|public.outbox_messages_tenant_id_created_at_idx",
+        "n|rel|public.outbox_messages_tenant_id_created_at_idx"
+      ],
+      "reads": [
+        "n|tbl|public.outbox_messages",
+        "n|sch|public",
+        "n|col|public.outbox_messages.tenant_id",
+        "n|col|public.outbox_messages.created_at"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "endpoints"],
+      "writes": [
+        "s|fk|public.endpoints.endpoints_tenant_id_tenants_id_fkey",
+        "n|fk|public.endpoints.endpoints_tenant_id_tenants_id_fkey",
+        "e|fk|public.endpoints.endpoints_tenant_id_tenants_id_fkey",
+        "n|con|public.endpoints.endpoints_tenant_id_tenants_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.endpoints",
+        "n|sch|public",
+        "n|tbl|public.tenants",
+        "n|sch|public",
+        "n|col|public.endpoints.tenant_id",
+        "n|col|public.tenants.id",
+        "e|uniqueness|public.tenants.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "signing_secrets"],
+      "writes": [
+        "s|fk|public.signing_secrets.signing_secrets_tenant_id_tenants_id_fkey",
+        "n|fk|public.signing_secrets.signing_secrets_tenant_id_tenants_id_fkey",
+        "e|fk|public.signing_secrets.signing_secrets_tenant_id_tenants_id_fkey",
+        "n|con|public.signing_secrets.signing_secrets_tenant_id_tenants_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.signing_secrets",
+        "n|sch|public",
+        "n|tbl|public.tenants",
+        "n|sch|public",
+        "n|col|public.signing_secrets.tenant_id",
+        "n|col|public.tenants.id",
+        "e|uniqueness|public.tenants.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "signing_secrets"],
+      "writes": [
+        "s|fk|public.signing_secrets.signing_secrets_endpoint_id_endpoints_id_fkey",
+        "n|fk|public.signing_secrets.signing_secrets_endpoint_id_endpoints_id_fkey",
+        "e|fk|public.signing_secrets.signing_secrets_endpoint_id_endpoints_id_fkey",
+        "n|con|public.signing_secrets.signing_secrets_endpoint_id_endpoints_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.signing_secrets",
+        "n|sch|public",
+        "n|tbl|public.endpoints",
+        "n|sch|public",
+        "n|col|public.signing_secrets.endpoint_id",
+        "n|col|public.endpoints.id",
+        "e|uniqueness|public.endpoints.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "endpoint_subscriptions"],
+      "writes": [
+        "s|fk|public.endpoint_subscriptions.endpoint_subscriptions_tenant_id_tenants_id_fkey",
+        "n|fk|public.endpoint_subscriptions.endpoint_subscriptions_tenant_id_tenants_id_fkey",
+        "e|fk|public.endpoint_subscriptions.endpoint_subscriptions_tenant_id_tenants_id_fkey",
+        "n|con|public.endpoint_subscriptions.endpoint_subscriptions_tenant_id_tenants_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.endpoint_subscriptions",
+        "n|sch|public",
+        "n|tbl|public.tenants",
+        "n|sch|public",
+        "n|col|public.endpoint_subscriptions.tenant_id",
+        "n|col|public.tenants.id",
+        "e|uniqueness|public.tenants.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "endpoint_subscriptions"],
+      "writes": [
+        "s|fk|public.endpoint_subscriptions.endpoint_subscriptions_endpoint_id_endpoints_id_fkey",
+        "n|fk|public.endpoint_subscriptions.endpoint_subscriptions_endpoint_id_endpoints_id_fkey",
+        "e|fk|public.endpoint_subscriptions.endpoint_subscriptions_endpoint_id_endpoints_id_fkey",
+        "n|con|public.endpoint_subscriptions.endpoint_subscriptions_endpoint_id_endpoints_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.endpoint_subscriptions",
+        "n|sch|public",
+        "n|tbl|public.endpoints",
+        "n|sch|public",
+        "n|col|public.endpoint_subscriptions.endpoint_id",
+        "n|col|public.endpoints.id",
+        "e|uniqueness|public.endpoints.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "events"],
+      "writes": [
+        "s|fk|public.events.events_tenant_id_tenants_id_fkey",
+        "n|fk|public.events.events_tenant_id_tenants_id_fkey",
+        "e|fk|public.events.events_tenant_id_tenants_id_fkey",
+        "n|con|public.events.events_tenant_id_tenants_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.events",
+        "n|sch|public",
+        "n|tbl|public.tenants",
+        "n|sch|public",
+        "n|col|public.events.tenant_id",
+        "n|col|public.tenants.id",
+        "e|uniqueness|public.tenants.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "deliveries"],
+      "writes": [
+        "s|fk|public.deliveries.deliveries_tenant_id_tenants_id_fkey",
+        "n|fk|public.deliveries.deliveries_tenant_id_tenants_id_fkey",
+        "e|fk|public.deliveries.deliveries_tenant_id_tenants_id_fkey",
+        "n|con|public.deliveries.deliveries_tenant_id_tenants_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.deliveries",
+        "n|sch|public",
+        "n|tbl|public.tenants",
+        "n|sch|public",
+        "n|col|public.deliveries.tenant_id",
+        "n|col|public.tenants.id",
+        "e|uniqueness|public.tenants.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "deliveries"],
+      "writes": [
+        "s|fk|public.deliveries.deliveries_event_id_events_id_fkey",
+        "n|fk|public.deliveries.deliveries_event_id_events_id_fkey",
+        "e|fk|public.deliveries.deliveries_event_id_events_id_fkey",
+        "n|con|public.deliveries.deliveries_event_id_events_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.deliveries",
+        "n|sch|public",
+        "n|tbl|public.events",
+        "n|sch|public",
+        "n|col|public.deliveries.event_id",
+        "n|col|public.events.id",
+        "e|uniqueness|public.events.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "deliveries"],
+      "writes": [
+        "s|fk|public.deliveries.deliveries_endpoint_id_endpoints_id_fkey",
+        "n|fk|public.deliveries.deliveries_endpoint_id_endpoints_id_fkey",
+        "e|fk|public.deliveries.deliveries_endpoint_id_endpoints_id_fkey",
+        "n|con|public.deliveries.deliveries_endpoint_id_endpoints_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.deliveries",
+        "n|sch|public",
+        "n|tbl|public.endpoints",
+        "n|sch|public",
+        "n|col|public.deliveries.endpoint_id",
+        "n|col|public.endpoints.id",
+        "e|uniqueness|public.endpoints.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "deliveries"],
+      "writes": [
+        "s|fk|public.deliveries.deliveries_signing_secret_id_signing_secrets_id_fkey",
+        "n|fk|public.deliveries.deliveries_signing_secret_id_signing_secrets_id_fkey",
+        "e|fk|public.deliveries.deliveries_signing_secret_id_signing_secrets_id_fkey",
+        "n|con|public.deliveries.deliveries_signing_secret_id_signing_secrets_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.deliveries",
+        "n|sch|public",
+        "n|tbl|public.signing_secrets",
+        "n|sch|public",
+        "n|col|public.deliveries.signing_secret_id",
+        "n|col|public.signing_secrets.id",
+        "e|uniqueness|public.signing_secrets.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "outbox_messages"],
+      "writes": [
+        "s|fk|public.outbox_messages.outbox_messages_tenant_id_tenants_id_fkey",
+        "n|fk|public.outbox_messages.outbox_messages_tenant_id_tenants_id_fkey",
+        "e|fk|public.outbox_messages.outbox_messages_tenant_id_tenants_id_fkey",
+        "n|con|public.outbox_messages.outbox_messages_tenant_id_tenants_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.outbox_messages",
+        "n|sch|public",
+        "n|tbl|public.tenants",
+        "n|sch|public",
+        "n|col|public.outbox_messages.tenant_id",
+        "n|col|public.tenants.id",
+        "e|uniqueness|public.tenants.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": ["table", "public", "outbox_messages"],
+      "writes": [
+        "s|fk|public.outbox_messages.outbox_messages_delivery_id_deliveries_id_fkey",
+        "n|fk|public.outbox_messages.outbox_messages_delivery_id_deliveries_id_fkey",
+        "e|fk|public.outbox_messages.outbox_messages_delivery_id_deliveries_id_fkey",
+        "n|con|public.outbox_messages.outbox_messages_delivery_id_deliveries_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.outbox_messages",
+        "n|sch|public",
+        "n|tbl|public.deliveries",
+        "n|sch|public",
+        "n|col|public.outbox_messages.delivery_id",
+        "n|col|public.deliveries.id",
+        "e|uniqueness|public.deliveries.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "endpoints",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "signing_secrets",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "endpoint_subscriptions",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "events",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "deliveries",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "outbox_messages",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "endpoint_status",
+        "values": ["active", "disabled"],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "signing_secret_status",
+        "values": ["active", "revoked", "retired"],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "delivery_status",
+        "values": [
+          "pending",
+          "processing",
+          "retrying",
+          "succeeded",
+          "dead_lettered",
+          "canceled"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "outbox_message_status",
+        "values": ["pending", "published"],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoints",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoints",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoints",
+        "name": "url",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoints",
+        "name": "description",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoints",
+        "name": "status",
+        "type": "endpoint_status",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'active'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoints",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoints",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "signing_secrets",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "signing_secrets",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "signing_secrets",
+        "name": "endpoint_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "signing_secrets",
+        "name": "secret_version",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "1",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "signing_secrets",
+        "name": "ciphertext",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "signing_secrets",
+        "name": "nonce",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "signing_secrets",
+        "name": "status",
+        "type": "signing_secret_status",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'active'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "signing_secrets",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "signing_secrets",
+        "name": "revoked_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoint_subscriptions",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoint_subscriptions",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoint_subscriptions",
+        "name": "endpoint_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoint_subscriptions",
+        "name": "event_type",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoint_subscriptions",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "events",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "events",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "events",
+        "name": "event_type",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "events",
+        "name": "idempotency_key",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "events",
+        "name": "request_hash",
+        "type": "varchar(64)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "events",
+        "name": "payload",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "events",
+        "name": "occurred_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "events",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "event_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "endpoint_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "status",
+        "type": "delivery_status",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'pending'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "attempt_count",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "max_attempts",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "5",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "next_attempt_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "destination_url",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "signing_secret_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "signing_secret_version",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "delivery_sequence",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "1",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "replay_of_delivery_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "delivery_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "message_type",
+        "type": "varchar(100)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "payload",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "status",
+        "type": "outbox_message_status",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'pending'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "attempts",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "next_attempt_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "published_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "locked_by",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "locked_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "lease_expires_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "last_error",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoints",
+        "name": "endpoints_tenant_id_status_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "status",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoints",
+        "name": "endpoints_tenant_id_created_at_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "signing_secrets",
+        "name": "signing_secrets_endpoint_status_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "endpoint_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "status",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoint_subscriptions",
+        "name": "endpoint_subscriptions_tenant_event_type_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "event_type",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "events",
+        "name": "events_tenant_id_created_at_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "events",
+        "name": "events_tenant_id_event_type_created_at_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "event_type",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "deliveries_tenant_id_created_at_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "deliveries_tenant_id_status_created_at_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "status",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "outbox_messages_status_next_attempt_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "status",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "next_attempt_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "outbox_messages_tenant_id_created_at_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoints",
+        "name": "endpoints_tenant_id_tenants_id_fkey",
+        "nameExplicit": false,
+        "columns": ["tenant_id"],
+        "schemaTo": "public",
+        "tableTo": "tenants",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "signing_secrets",
+        "name": "signing_secrets_tenant_id_tenants_id_fkey",
+        "nameExplicit": false,
+        "columns": ["tenant_id"],
+        "schemaTo": "public",
+        "tableTo": "tenants",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "signing_secrets",
+        "name": "signing_secrets_endpoint_id_endpoints_id_fkey",
+        "nameExplicit": false,
+        "columns": ["endpoint_id"],
+        "schemaTo": "public",
+        "tableTo": "endpoints",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoint_subscriptions",
+        "name": "endpoint_subscriptions_tenant_id_tenants_id_fkey",
+        "nameExplicit": false,
+        "columns": ["tenant_id"],
+        "schemaTo": "public",
+        "tableTo": "tenants",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoint_subscriptions",
+        "name": "endpoint_subscriptions_endpoint_id_endpoints_id_fkey",
+        "nameExplicit": false,
+        "columns": ["endpoint_id"],
+        "schemaTo": "public",
+        "tableTo": "endpoints",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "events",
+        "name": "events_tenant_id_tenants_id_fkey",
+        "nameExplicit": false,
+        "columns": ["tenant_id"],
+        "schemaTo": "public",
+        "tableTo": "tenants",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "deliveries_tenant_id_tenants_id_fkey",
+        "nameExplicit": false,
+        "columns": ["tenant_id"],
+        "schemaTo": "public",
+        "tableTo": "tenants",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "deliveries_event_id_events_id_fkey",
+        "nameExplicit": false,
+        "columns": ["event_id"],
+        "schemaTo": "public",
+        "tableTo": "events",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "deliveries_endpoint_id_endpoints_id_fkey",
+        "nameExplicit": false,
+        "columns": ["endpoint_id"],
+        "schemaTo": "public",
+        "tableTo": "endpoints",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "deliveries_signing_secret_id_signing_secrets_id_fkey",
+        "nameExplicit": false,
+        "columns": ["signing_secret_id"],
+        "schemaTo": "public",
+        "tableTo": "signing_secrets",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "RESTRICT",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "outbox_messages_tenant_id_tenants_id_fkey",
+        "nameExplicit": false,
+        "columns": ["tenant_id"],
+        "schemaTo": "public",
+        "tableTo": "tenants",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "outbox_messages_delivery_id_deliveries_id_fkey",
+        "nameExplicit": false,
+        "columns": ["delivery_id"],
+        "schemaTo": "public",
+        "tableTo": "deliveries",
+        "columnsTo": ["id"],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoints",
+        "name": "endpoints_pkey",
+        "columns": ["id"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "signing_secrets",
+        "name": "signing_secrets_pkey",
+        "columns": ["id"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoint_subscriptions",
+        "name": "endpoint_subscriptions_pkey",
+        "columns": ["id"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "events",
+        "name": "events_pkey",
+        "columns": ["id"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "deliveries_pkey",
+        "columns": ["id"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "outbox_messages_pkey",
+        "columns": ["id"],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoints",
+        "name": "endpoints_tenant_id_id_unique",
+        "nameExplicit": true,
+        "columns": ["tenant_id", "id"],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "signing_secrets",
+        "name": "signing_secrets_tenant_id_id_unique",
+        "nameExplicit": true,
+        "columns": ["tenant_id", "id"],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "endpoint_subscriptions",
+        "name": "endpoint_subscriptions_tenant_endpoint_event_unique",
+        "nameExplicit": true,
+        "columns": ["tenant_id", "endpoint_id", "event_type"],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "events",
+        "name": "events_tenant_id_idempotency_key_unique",
+        "nameExplicit": true,
+        "columns": ["tenant_id", "idempotency_key"],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "events",
+        "name": "events_tenant_id_id_unique",
+        "nameExplicit": true,
+        "columns": ["tenant_id", "id"],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "deliveries",
+        "name": "deliveries_tenant_event_endpoint_sequence_unique",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "event_id",
+          "endpoint_id",
+          "delivery_sequence"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "outbox_messages",
+        "name": "outbox_messages_delivery_message_type_unique",
+        "nameExplicit": true,
+        "columns": ["delivery_id", "message_type"],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    }
+  ]
+}

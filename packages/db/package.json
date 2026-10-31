@@ -1,0 +1,23 @@
+{
+  "name": "@orchestrail/db",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "test": "bun test",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "drizzle-orm": "^1.0.0-rc.5"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "dotenv": "^16.4.7",
+    "drizzle-kit": "^1.0.0-rc.5",
+    "typescript": "7.0.2"
+  }
+}

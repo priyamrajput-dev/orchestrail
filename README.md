@@ -81,17 +81,70 @@ The developer has reported the following local versions:
 
 These are the versions observed during initial setup, not a permanent requirement. Verify compatibility when adding dependencies.
 
-## Getting started
+## Local Infrastructure (PostgreSQL & Redis)
 
-The detailed setup commands will be added after the existing Turborepo scaffold has been inspected and the workspace layout has been confirmed. Do not assume PostgreSQL, Redis, migrations, or application services are configured yet.
+Local development uses Docker Compose with:
 
-Expected first setup milestones:
+- **PostgreSQL 18.6** (`postgres:18.6-alpine`) — relational source of truth
+- **Redis 8.10.3** (`redis:8.10.3-alpine`) — queue backend for BullMQ
 
-1. Inspect `package.json`, `turbo.json`, lockfile, and generated folders.
-2. Configure Bun workspaces and shared TypeScript settings.
-3. Add Docker Compose services for PostgreSQL and Redis.
-4. Start both services and verify connectivity.
-5. Configure Drizzle and create the initial migrations.
+Both services are bound to `127.0.0.1` on the host machine to avoid exposing database ports to the local network.
+
+### 1. Configure Environment Variables
+
+Copy `.env.example` to `.env` in the repository root:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and set strong development passwords for `POSTGRES_PASSWORD` and `REDIS_PASSWORD`. Missing passwords will cause `compose.yaml` to fail validation immediately.
+
+### 2. Start Services
+
+To launch both containers in detached mode:
+
+```bash
+docker compose up -d
+```
+
+To check service health and running status:
+
+```bash
+docker compose ps
+```
+
+Both containers will report `(healthy)` when ready to accept connections.
+
+### 3. Inspect Logs
+
+```bash
+# Stream logs from both services
+docker compose logs -f
+
+# View logs for a specific service
+docker compose logs postgres
+docker compose logs redis
+```
+
+### 4. Stopping vs Removing Containers
+
+- **Stop containers** (preserves state in memory and volume):
+  ```bash
+  docker compose stop
+  ```
+- **Start stopped containers**:
+  ```bash
+  docker compose start
+  ```
+- **Remove containers safely** (keeps persistent volumes intact):
+  ```bash
+  docker compose down
+  ```
+- **Data Persistence**:
+  Data is stored in named Docker volumes (`orchestrail_postgres_data` and `orchestrail_redis_data`). Normal `docker compose down` does **not** destroy your data.
+  > [!WARNING]
+  > Running `docker compose down -v` deletes persistent volumes and permanently erases all local database and Redis data. Only use `-v` if you intentionally want to reset your local database from scratch.
 
 ## Documentation
 

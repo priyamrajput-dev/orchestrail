@@ -1,6 +1,6 @@
-# Orchestrail API — Phase 1 Proposal
+# Orchestrail API — Phase 1 Contract
 
-**Status:** Proposed API contract. These routes are planned; do not consider them implemented until code and tests exist.
+**Status:** Phase 1 API specifications. Verified implemented endpoints include `/v1/api-keys` and `/v1/events`.
 
 ## 1. Conventions
 
@@ -9,45 +9,49 @@
 - Request/response format: JSON unless otherwise specified.
 - Customer API authentication: `Authorization: Bearer <api_key>`.
 - Tenant identity is derived from the authenticated API key, not accepted from request bodies.
-- API keys have scopes; each route must declare its required scope.
-- Use a request/correlation ID in responses and logs.
+- API keys have scopes; each route declares and enforces its required scope via `requireScope`.
+- Use a request/correlation ID (`X-Request-Id`) in responses and logs.
 - Use cursor pagination for collection endpoints.
 - Use UTC timestamps in RFC 3339/ISO 8601 format.
-- Validate request bodies, query parameters, and path parameters with shared schemas.
+- Validate request bodies, query parameters, and path parameters with shared Zod schemas.
 
-Dashboard/browser authentication is a separate future concern. Do not assume customer API keys are the final dashboard login mechanism.
+Dashboard/browser authentication is a separate future concern. Customer API keys are for machine-to-machine integrations.
 
 ## 2. Common response and error conventions
 
-Successful responses should be consistent and documented per route. Errors should use a common structure, for example:
+Successful responses are structured and documented per route. Errors use a standard format:
 
 ```json
 {
   "error": {
-    "code": "idempotency_conflict",
-    "message": "The idempotency key was already used with a different request body.",
+    "code": "IDEMPOTENCY_CONFLICT",
+    "message": "An event with the same idempotency key exists with a different payload",
     "request_id": "req_example"
   }
 }
 ```
 
-Expected status classes:
+Standard error codes:
 
-- `400` malformed request or invalid parameters.
-- `401` missing, invalid, expired, or revoked API key.
-- `403` authenticated key lacks the required scope.
-- `404` resource absent or not visible within the authenticated tenant.
-- `409` idempotency conflict or incompatible state transition.
-- `422` semantically invalid request, where distinguished from `400`.
-- `429` tenant rate limit exceeded.
-- `500` unexpected internal error.
-- `503` temporary dependency/service unavailability when the request cannot be safely accepted.
+- `VALIDATION_ERROR` (400): malformed request, invalid fields, or missing parameters.
+- `IDEMPOTENCY_KEY_REQUIRED` (400): missing or empty `Idempotency-Key` header.
+- `UNAUTHORIZED` (401): missing, invalid, expired, or revoked API key.
+- `FORBIDDEN` (403): authenticated key lacks the required scope or tenant is suspended.
+- `NOT_FOUND` (404): resource absent or not visible within the authenticated tenant.
+- `CONFLICT` / `IDEMPOTENCY_CONFLICT` (409): idempotency conflict or duplicate key with different payload.
+- `PAYLOAD_TOO_LARGE` (413): request body exceeds the configured size limit (default 256 KiB).
+- `RATE_LIMIT_EXCEEDED` (429): tenant rate limit exceeded.
+- `INTERNAL_SERVER_ERROR` (500): unexpected internal server error.
+- `SERVICE_UNAVAILABLE` (503): temporary dependency unavailability.
 
-Do not leak whether a resource exists in a different tenant. Cross-tenant resource identifiers should normally behave as not found.
+Cross-tenant resources always behave as not found (`404`) to prevent information leakage.
 
 ## 3. API key management
 
-| Method   | Path                  | Purpose           | Proposed scope   |
+Implemented in `apps/api/src/features/api-keys/api-keys.routes.ts`.
+All endpoints require `Authorization: Bearer <api_key>` with `api_keys:read` or `api_keys:write`.
+
+| Method   | Path                  | Purpose           | Scope            |
 | -------- | --------------------- | ----------------- | ---------------- |
 | `POST`   | `/v1/api-keys`        | Create an API key | `api_keys:write` |
 | `GET`    | `/v1/api-keys`        | List key metadata | `api_keys:read`  |
@@ -55,40 +59,25 @@ Do not leak whether a resource exists in a different tenant. Cross-tenant resour
 
 ### Create key
 
-Example body:
+Creates a key with scoped permissions. Callers cannot grant scopes they do not hold.
+The plaintext key is returned exactly once in the response.
 
-```json
-{
-  "name": "Production ingestion key",
-  "scopes": ["events:write", "events:read", "endpoints:read"],
-  "expires_at": null
-}
-```
+## 4. Event ingestion (`POST /v1/events`)
 
-The response may include the plaintext secret exactly once, alongside its ID, prefix, scopes, and creation metadata. Persist only a hash of the high-entropy secret. Listing must never return the secret again.
+Implemented in `apps/api/src/features/events/events.routes.ts`.
 
-The first tenant and first administrative API key need a controlled bootstrap/provisioning process. Do not create an unauthenticated public endpoint that allows anyone to create a tenant or key.
-
-## 4. Event ingestion and reads
-
-| Method | Path                             | Purpose                      | Proposed scope    |
-| ------ | -------------------------------- | ---------------------------- | ----------------- |
-| `POST` | `/v1/events`                     | Accept an event              | `events:write`    |
-| `GET`  | `/v1/events`                     | List tenant events           | `events:read`     |
-| `GET`  | `/v1/events/:eventId`            | Read event details           | `events:read`     |
-| `GET`  | `/v1/events/:eventId/deliveries` | List deliveries for an event | `deliveries:read` |
-
-### `POST /v1/events`
-
-Required headers:
+### Endpoint Contract
 
 ```http
+POST /v1/events
 Authorization: Bearer <api_key>
 Idempotency-Key: <tenant-scoped-unique-value>
 Content-Type: application/json
 ```
 
-Proposed body:
+Required scope: `events:write`.
+
+### Request Body Schema
 
 ```json
 {
@@ -98,123 +87,57 @@ Proposed body:
     "amount": 2500,
     "currency": "INR"
   },
-  "occurred_at": "2026-10-30T12:00:00Z"
+  "occurred_at": "2026-10-31T10:30:00Z"
 }
 ```
 
-`type` and `data` are required. `occurred_at` is optional; if omitted, the platform records its own receipt/creation timestamp and documents the distinction. The idempotency header is required for the first version unless a later documented decision changes that requirement.
+Validation rules:
 
-The API must:
+- `Idempotency-Key` header is required, non-empty, max 255 characters.
+- `type` is required, max 255 characters, must follow lowercase format using alphanumeric characters separated by dots, underscores, or hyphens (`/^[a-z0-9]+([._-][a-z0-9]+)*$/`).
+- `data` must be a valid non-null, non-array JSON object.
+- `occurred_at` is optional, must be a valid ISO-8601 timestamp string when supplied.
+- Initial request body size limit: 256 KiB (`MAX_EVENT_BODY_BYTES`, default 262,144 bytes). Enforced prior to JSON parsing.
 
-1. Authenticate the API key and resolve its tenant/scopes.
-2. Validate the body and idempotency header.
-3. Compute a stable request hash from the accepted semantic request representation.
-4. Insert the event, matching delivery records, and outbox messages in one PostgreSQL transaction.
-5. Commit before returning success.
-6. Return without waiting for customer webhook delivery.
+### Deterministic Request Hashing
 
-New event response example (`202 Accepted`):
+Request hash is computed via SHA-256 over canonical JSON serialization of the validated semantic input (`type`, `data`, and optional explicit `occurred_at`). Object keys are recursively sorted alphabetically so key reordering does not alter the hash.
 
-```json
-{
-  "event_id": "<event-uuid>",
-  "accepted": true,
-  "duplicate": false,
-  "deliveries_created": 2
-}
-```
+### Idempotency Behavior
 
-Idempotency behavior:
+1. **New event (`HTTP 202 Accepted`):**
+   ```json
+   {
+     "event_id": "e838f328-98e6-4fd2-892f-b4ec2b55f653",
+     "accepted": true,
+     "duplicate": false,
+     "deliveries_created": 2
+   }
+   ```
+2. **Identical duplicate retry (`HTTP 200 OK`):**
+   Same idempotency key with identical semantic request hash returns the original event and counts existing deliveries without creating duplicate records:
+   ```json
+   {
+     "event_id": "e838f328-98e6-4fd2-892f-b4ec2b55f653",
+     "accepted": true,
+     "duplicate": true,
+     "deliveries_created": 2
+   }
+   ```
+3. **Idempotency conflict (`HTTP 409 Conflict`):**
+   Same idempotency key with a differing payload returns error code `IDEMPOTENCY_CONFLICT`.
 
-- Same tenant + same key + same request hash: return the existing event result with `duplicate: true`; do not create additional original deliveries.
-- Same tenant + same key + different request hash: return `409 idempotency_conflict`.
-- Different tenants may use the same idempotency key independently.
+### Transactional Boundary
 
-The exact duplicate response status (for example `200` versus `202`) should be finalized and documented consistently during implementation. The semantic response must identify the existing event and must not imply a second event was created.
+The entire ingestion sequence occurs within a single PostgreSQL transaction:
 
-### Event listing
+1. Event insertion with `ON CONFLICT (tenant_id, idempotency_key) DO NOTHING`.
+2. Matching active endpoints and their active signing secrets for the event type.
+3. Inserting snapshot `deliveries` (URL, signing secret ID, secret version, sequence 1).
+4. Inserting transactional `outbox_messages` (`webhook.delivery.requested`).
+5. Transaction commit before HTTP response. No Redis or external HTTP calls take place inside the transaction.
 
-Proposed query parameters:
+## 5. Planned Endpoints (Upcoming Milestones)
 
-- `limit` (bounded server-side maximum)
-- `cursor`
-- `type`
-- `from`
-- `to`
-
-Return a page of tenant-owned events and an opaque next cursor. Do not use unbounded page sizes.
-
-## 5. Endpoint management and subscriptions
-
-| Method   | Path                                      | Purpose                                | Proposed scope    |
-| -------- | ----------------------------------------- | -------------------------------------- | ----------------- |
-| `POST`   | `/v1/endpoints`                           | Register an endpoint                   | `endpoints:write` |
-| `GET`    | `/v1/endpoints`                           | List endpoints                         | `endpoints:read`  |
-| `GET`    | `/v1/endpoints/:endpointId`               | Read endpoint                          | `endpoints:read`  |
-| `PATCH`  | `/v1/endpoints/:endpointId`               | Update endpoint metadata/configuration | `endpoints:write` |
-| `DELETE` | `/v1/endpoints/:endpointId`               | Disable endpoint                       | `endpoints:write` |
-| `POST`   | `/v1/endpoints/:endpointId/rotate-secret` | Rotate signing secret                  | `endpoints:write` |
-
-### Create endpoint
-
-Proposed body:
-
-```json
-{
-  "url": "https://customer.example/webhooks/orchestrail",
-  "description": "Production order webhook",
-  "event_types": ["order.completed", "payment.failed"]
-}
-```
-
-The service validates the URL and subscription list, creates the endpoint, generates a high-entropy signing secret, encrypts the secret at rest, and persists subscriptions. The plaintext signing secret is returned once. It must not be returned by ordinary endpoint reads.
-
-Outbound URL validation must defend against SSRF, including loopback/private/link-local/metadata destinations, DNS resolution and rebinding, and redirects. The redirect policy must be explicit; do not assume validating the initial URL is sufficient.
-
-### Update and delete
-
-`PATCH` may update URL, description, enabled/disabled status, and subscriptions. Subscription replacement should be transactional. `DELETE` should initially be a soft disable so delivery history and referential integrity are preserved.
-
-### Rotate secret
-
-Generate a new secret and update encrypted secret material and key version. Define whether an overlap period supports both old and new secrets; do not silently assume old signatures remain valid.
-
-## 6. Delivery APIs
-
-| Method | Path                                  | Purpose                  | Proposed scope     |
-| ------ | ------------------------------------- | ------------------------ | ------------------ |
-| `GET`  | `/v1/deliveries`                      | List tenant deliveries   | `deliveries:read`  |
-| `GET`  | `/v1/deliveries/:deliveryId`          | Read delivery            | `deliveries:read`  |
-| `GET`  | `/v1/deliveries/:deliveryId/attempts` | Read attempt history     | `deliveries:read`  |
-| `POST` | `/v1/deliveries/:deliveryId/replay`   | Create a replay delivery | `deliveries:write` |
-
-Proposed list filters:
-
-- `status`
-- `endpoint_id`
-- `event_id`
-- `from`
-- `to`
-- `limit`
-- `cursor`
-
-Replay behavior:
-
-- Verify the original delivery belongs to the authenticated tenant.
-- Verify the endpoint/event can still be replayed under product policy.
-- Create a new delivery record linked to the original through `replay_of_delivery_id`.
-- Create an outbox message for the new delivery in the same transaction.
-- Preserve the original delivery and attempt history.
-- Make replay requests idempotent or otherwise protect against accidental repeated clicks; decide and document the replay idempotency contract before implementation.
-
-## 7. Webhook envelope and signing proposal
-
-A delivery should include a stable delivery ID, event ID, event type, timestamp, and event data. The exact JSON envelope and header names are a contract that must be finalized before SDK implementation.
-
-The signature should be HMAC-SHA256 over a documented timestamp-and-raw-body construction. Verification must use the exact raw request bytes, validate timestamp tolerance, and compare signatures in constant time. Do not parse and re-serialize JSON before verification.
-
-The SDK's `verifyWebhook` should expose a clear contract for raw body, signature headers, secret, and timestamp tolerance. It should fail closed on missing or malformed signature material.
-
-## 8. Not part of Phase 1
-
-Do not add workflow, usage/billing, AI chat, RAG, or GraphRAG endpoints to the Phase 1 API. Those routes will be designed when their respective phases begin and their data models are known.
+- Endpoint management: `POST /v1/endpoints`, `GET /v1/endpoints`, `PATCH /v1/endpoints/:id`, `DELETE /v1/endpoints/:id`.
+- Delivery tracking: `GET /v1/deliveries`, `GET /v1/deliveries/:id`, `GET /v1/deliveries/:id/attempts`.

@@ -1,0 +1,59 @@
+name: orchestrail
+
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    container_name: orchestrail_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Missing required POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Missing required POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?Missing required POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - orchestrail_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:8.10.3-alpine
+    container_name: orchestrail_redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:?Missing required REDIS_PASSWORD}
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory-policy noeviction
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Missing required REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    networks:
+      - orchestrail_network
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping | grep -q PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+networks:
+  orchestrail_network:
+    name: orchestrail_network
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: orchestrail_postgres_data
+  redis_data:
+    name: orchestrail_redis_data

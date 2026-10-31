@@ -8,6 +8,7 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
   DATABASE_URL: z.string().url().optional(),
   REDIS_URL: z.string().url().optional(),
+  MAX_EVENT_BODY_BYTES: z.coerce.number().int().positive().default(262144), // 256 KiB
 });
 
 export type Env = z.infer<typeof envSchema>;

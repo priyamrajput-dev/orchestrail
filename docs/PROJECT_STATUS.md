@@ -7,38 +7,43 @@ This file tracks verified implementation progress. Proposed architecture is not 
 ## Current position
 
 - **Phase:** 1 — Events + Webhook Delivery + SDK
-- **Milestone:** 1 — Inspect and establish the monorepo
-- **Current immediate task:** Inspect the generated Turborepo scaffold before modifying it.
+- **Completed Milestones:**
+  - Milestone 1: Monorepo Foundation & API Bootstrap
+  - Milestone 2: Docker Infrastructure (PostgreSQL 18.6 & Redis 8.10.3)
+  - Milestone 3: Database Foundation (`packages/db` with Bun.SQL + Drizzle ORM)
+  - Milestone 4: Tenant Management & API Key Authentication
+  - Milestone 6: Event Ingestion, Idempotency and Transactional Outbox
+- **Next immediate task:** Milestone 7: Outbox Publisher and BullMQ Queue Workers.
 
-## Verified environment (reported by developer)
+## Verified environment
 
-| Tool           | Reported version | Notes                                                             |
-| -------------- | ---------------: | ----------------------------------------------------------------- |
-| Bun            |            1.4.4 | Available in terminal.                                            |
-| Docker         |           29.4.0 | Available in terminal.                                            |
-| Docker Compose |            5.1.1 | Available in terminal.                                            |
-| Git            |           2.50.1 | Available in terminal.                                            |
-| Turborepo      |      Initialized | Scaffold success message received; exact files not yet inspected. |
+| Tool           | Reported version | Notes                                                     |
+| -------------- | ---------------: | --------------------------------------------------------- |
+| Bun            |            1.4.4 | Available in terminal.                                    |
+| Docker         |           29.4.0 | Available in terminal.                                    |
+| Docker Compose |            5.1.1 | Available in terminal.                                    |
+| Git            |           2.50.1 | Available in terminal.                                    |
+| PostgreSQL     |             18.6 | Running in container `orchestrail_postgres` on port 5432. |
+| Redis          |           8.10.3 | Running in container `orchestrail_redis` on port 6379.    |
 
-## Verified setup
+## Verified setup & implementations
 
-- [x] Project directory created as `Orchestrail`.
-- [x] Turborepo scaffold generated.
-- [x] Git repository initialized by scaffold.
-- [x] Bun, Docker, Docker Compose, and Git versions checked.
-
-## Not yet verified
-
-- [ ] Root `package.json` inspected.
-- [ ] `turbo.json` inspected.
-- [ ] Bun lockfile identified.
-- [ ] Workspace globs configured.
-- [ ] `apps/*` and `packages/*` structure established.
-- [ ] TypeScript configuration established.
-- [ ] Docker Compose PostgreSQL service created and tested.
-- [ ] Docker Compose Redis service created and tested.
-- [ ] Drizzle configured.
-- [ ] Initial migrations created and applied.
+- [x] Turborepo monorepo scaffold established.
+- [x] Docker Compose PostgreSQL 18.6 and Redis 8.10.3 services verified and healthy.
+- [x] `@orchestrail/db` package using native `Bun.SQL` pool adapter and Drizzle ORM.
+- [x] Database migrations generated with Drizzle Kit and applied.
+- [x] Standardized error handling (`AppError`, `globalErrorHandler`, `notFoundHandler`).
+- [x] Controlled tenant provisioning CLI (`bun run provision:tenant`).
+- [x] API key authentication middleware (`apiKeyAuthMiddleware`) with fast prefix-indexed SHA-256 lookup.
+- [x] Scope enforcement middleware (`requireScope`) supporting standard scopes and wildcard `*`.
+- [x] API key CRUD endpoints (`/v1/api-keys`).
+- [x] Event schemas (`events`, `endpoints`, `signing_secrets`, `endpoint_subscriptions`, `deliveries`, `outbox_messages`).
+- [x] Deterministic canonical request hashing (SHA-256 over alphabetically sorted keys).
+- [x] `POST /v1/events` ingestion endpoint with 256 KiB body limit.
+- [x] PostgreSQL `ON CONFLICT (tenant_id, idempotency_key)` concurrency-safe idempotency.
+- [x] Transactional subscription matching and snapshot delivery creation.
+- [x] Transactional outbox message persistence (`webhook.delivery.requested`).
+- [x] 48 automated integration tests passing across all packages.
 
 ## Settled architecture decisions
 
@@ -47,24 +52,9 @@ This file tracks verified implementation progress. Proposed architecture is not 
 - Bun worker with BullMQ.
 - Redis as BullMQ backend from Phase 1.
 - PostgreSQL as business source of truth.
-- Drizzle ORM and migrations.
+- Drizzle ORM with native Bun.SQL pool driver.
 - Transactional outbox from PostgreSQL to BullMQ.
-- TypeScript SDK using the REST API.
-- Next.js dashboard.
-- Separate Python/FastAPI AI service in a later phase.
-- Build Orchestrail's business logic; use BullMQ for queue mechanics.
-
-## Open decisions to resolve before or during implementation
-
-- Inspect the exact Turborepo scaffold and preserve compatible generated configuration.
-- Decide the initial BullMQ Redis client adapter and verify Bun compatibility for selected versions.
-- Finalize environment variable names and secret-management approach.
-- Finalize the webhook envelope, signature header names, timestamp format, and secret-rotation overlap policy.
-- Finalize API-key bootstrap and scope model.
-- Finalize duplicate event response status.
-- Finalize replay idempotency and sequence allocation strategy.
-- Define payload, response excerpt, and event retention limits.
-
-## Update discipline
-
-When a milestone is completed, update its checklist and record evidence (test command, migration, benchmark, or observed behavior). Do not mark work complete based only on a plan or generated file existing. Record important decisions and their trade-offs in `docs/ARCHITECTURE.md` or a separate decision record.
+- Feature-first vertical slice architecture.
+- SHA-256 deterministic canonical serialization for request hashing.
+- Idempotency key uniqueness per tenant backed by PostgreSQL constraint.
+- Fast index lookup on `api_keys.key_prefix` + constant-time secret comparison.

@@ -7,7 +7,8 @@
     "start": "bun src/server.ts",
     "test": "bun test",
     "check-types": "tsc --noEmit",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "provision:tenant": "bun bin/provision-tenant.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
@@ -16,6 +17,8 @@
     "typescript": "^7"
   },
   "dependencies": {
+    "@orchestrail/db": "workspace:*",
+    "drizzle-orm": "^1.0.0-rc.5",
     "hono": "^4.13.14",
     "zod": "^4.6.7"
   }
