@@ -44,7 +44,7 @@ Current intended stack:
 - AI service: Python + FastAPI.
 - SDK: TypeScript package using native `fetch` where practical.
 - Shared contracts: TypeScript types and Zod schemas.
-- Logging: structured logs; Pino is the current candidate unless the developer makes another decision.
+- Logging: native `hono/logger`.
 
 Planned workspace layout:
 
@@ -56,6 +56,27 @@ Planned workspace layout:
 - `packages/shared`
 - `packages/sdk`
 - `packages/queue`
+
+### Architectural Layers & Boundaries
+
+Throughout Orchestrail, code structure adheres to a feature-first modular architecture (vertical slice architecture):
+
+| Layer / Directory  | Owns                                                                                   |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| `common/`          | Shared technical infrastructure (error handling, HTTP utilities, shared middleware)    |
+| `features/`        | Business capabilities (e.g. `health`, `events`, `endpoints`, `api-keys`, `deliveries`) |
+| `config/`          | Application configuration and environment validation                                   |
+| `packages/db/`     | Database infrastructure and schema                                                     |
+| `packages/shared/` | Cross-application contracts and types                                                  |
+| `packages/queue/`  | BullMQ infrastructure and job contracts                                                |
+
+Rules:
+
+- Organize application code by business feature (`features/<feature-name>`).
+- Keep cross-cutting technical functionality in `common/`.
+- Keep domain-specific logic inside its owning feature.
+- Never create global `routes/`, `controllers/`, or `services/` dumping grounds.
+- Do not put application secrets or app-specific environment variables in `packages/shared/`.
 
 The Turborepo scaffold and Git repository have been initialized. The developer reported Bun 1.4.4, Docker 29.4.0, Docker Compose 5.1.1, and Git 2.50.1. The generated repository files have not yet been inspected in this conversation. Do not assume the workspace folders or application scaffolds already exist.
 

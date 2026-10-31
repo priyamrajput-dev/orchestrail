@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "bun --watch src/server.ts",
     "start": "bun src/server.ts",
+    "test": "bun test",
     "check-types": "tsc --noEmit",
     "typecheck": "tsc --noEmit"
   },
@@ -15,6 +16,7 @@
     "typescript": "^7"
   },
   "dependencies": {
-    "hono": "^4.13.14"
+    "hono": "^4.13.14",
+    "zod": "^4.6.7"
   }
 }

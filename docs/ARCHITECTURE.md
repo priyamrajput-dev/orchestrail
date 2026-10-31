@@ -15,7 +15,26 @@ Orchestrail is a multi-tenant infrastructure platform for events, webhooks, and 
 - Independent failure of the AI layer without breaking core platform capabilities.
 - A modular monolith with separate runtime processes before considering microservices.
 
-## 2. High-level components
+## 2. Architectural boundaries and vertical slices
+
+We follow a feature-first modular architecture (vertical slice architecture) across all services:
+
+| Layer / Directory  | Owns                                                                                   |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| `common/`          | Shared technical infrastructure (error handling, HTTP utilities, shared middleware)    |
+| `features/`        | Business capabilities (e.g. `health`, `events`, `endpoints`, `api-keys`, `deliveries`) |
+| `config/`          | Application configuration and environment validation                                   |
+| `packages/db/`     | Database infrastructure and schema                                                     |
+| `packages/shared/` | Cross-application contracts and types                                                  |
+| `packages/queue/`  | BullMQ infrastructure and job contracts                                                |
+
+Rules:
+
+- Application code is organized by feature rather than layer (no global `routes/`, `controllers/`, or `services/` folders).
+- Cross-cutting technical capabilities live in `common/`.
+- Application-specific configurations live in `config/` and are validated on process startup.
+
+## 2.1 High-level components
 
 | Component         | Responsibility                                                          | Primary dependencies                   |
 | ----------------- | ----------------------------------------------------------------------- | -------------------------------------- |
